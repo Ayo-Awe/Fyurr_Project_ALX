@@ -54,6 +54,7 @@ class Artist(db.Model):
     genres = db.Column(db.String(120))
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
+    #check out postgres dataType for arrays or lists
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
