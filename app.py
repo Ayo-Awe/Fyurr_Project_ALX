@@ -23,11 +23,11 @@ from forms import *
 #----------------------------------------------------------------------------#
 
 app = Flask(__name__)
-migrate = Migrate(compare_type=True)
+
 moment = Moment(app)
 app.config.from_object('config')
 db = SQLAlchemy(app)
-migrate.init_app(app,db)
+Migrate(app,db)
 
 # TODO: connect to a local postgresql database
 
@@ -51,7 +51,7 @@ class Venue(db.Model):
     state = db.Column(db.String(120), nullable=False)
     address = db.Column(db.String(120), nullable=False)
     phone = db.Column(db.String(120), nullable=False)
-    image_link = db.Column(db.String(500),nullable=False)
+    image_link = db.Column(db.String(),nullable=False)
     facebook_link = db.Column(db.String(120), nullable=False)
     website = db.Column(db.String(),nullable=False)
     genres = db.Column(ARRAY(db.String()), nullable=False)
@@ -69,7 +69,7 @@ class Artist(db.Model):
     city = db.Column(db.String(120), nullable=False)
     state = db.Column(db.String(120), nullable=False)
     phone = db.Column(db.String(120), nullable=False)
-    image_link = db.Column(db.String(500),nullable=False)
+    image_link = db.Column(db.String(),nullable=False)
     facebook_link = db.Column(db.String(120), nullable=False)
     website = db.Column(db.String(),nullable=False)
     genres = db.Column(ARRAY(db.String()), nullable=False)
@@ -116,7 +116,29 @@ def index():
 def venues():
   # TODO: replace with real venues data.
   #       num_upcoming_shows should be aggregated based on number of upcoming shows per venue.
-  data=[{
+  venues = Venue.query.all()
+  city_states = {(venue.city,venue.state) for venue in venues}
+  print(city_states)
+  def City_State_Serializer(city_state):
+    city = city_state[0]
+    state = city_state[1]
+    response = {
+      "city": city,
+      "state":state,
+      "venues":[]
+    }
+    for venue in venues:
+      if(venue.city == city and venue.state == state):
+        d = {
+          "id":venue.id,
+          "name":venue.name,
+          "num_upcoming_shows": Show.query.filter(Show.venue_id==venue.id,Show.start_time>datetime.today()).count()
+        }
+        response['venues'].append(d)
+    return response
+  
+  data= [City_State_Serializer(city_state) for city_state in city_states]
+  data2=[{
     "city": "San Francisco",
     "state": "CA",
     "venues": [{
