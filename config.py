@@ -12,4 +12,4 @@ DEBUG = True
 # TODO IMPLEMENT DATABASE URL
 
 SQLALCHEMY_TRACK_MODIFICATIONS = False
-SQLALCHEMY_DATABASE_URI = 'postgresql+psycopg2://postgres:Aweayo@localhost:5432/fyyur'
+SQLALCHEMY_DATABASE_URI = 'postgresql+psycopg2://postgres:Aweayo@localhost:5432/fyyurdb'
