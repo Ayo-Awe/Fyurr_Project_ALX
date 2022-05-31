@@ -340,15 +340,15 @@ def edit_artist_submission(artist_id):
   try:
     form = ArtistForm()
     artist = Artist.query.get(artist_id)
-    artist.name = form.name.data,
-    artist.city = form.city.data,
-    artist.state = form.state.data,
-    artist.phone = form.phone.data,
-    artist.image_link = form.image_link.data,
-    artist.facebook_link = form.facebook_link.data,
-    artist.website = form.website_link.data,
-    artist.genres = form.genres.data,
-    artist.seeking_venue = form.seeking_venue.data,
+    artist.name = form.name.data
+    artist.city = form.city.data
+    artist.state = form.state.data
+    artist.phone = form.phone.data
+    artist.image_link = form.image_link.data
+    artist.facebook_link = form.facebook_link.data
+    artist.website = form.website_link.data
+    artist.genres = form.genres.data
+    artist.seeking_venue = form.seeking_venue.data
     artist.seeking_description = form.seeking_description.data
     db.session.add(artist)
     db.session.commit()
