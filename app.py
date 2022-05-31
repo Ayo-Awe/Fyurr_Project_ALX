@@ -2,21 +2,17 @@
 # Imports
 #----------------------------------------------------------------------------#
 
-from contextlib import nullcontext
+
 import json
-from linecache import lazycache
 import dateutil.parser
 import sys
 import babel
 from flask import Flask, render_template, request, Response, flash, redirect, url_for,abort
+from models import Venue,Artist,Show
 from flask_moment import Moment
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
+from models import db, db_setup
 import logging
 from logging import Formatter, FileHandler
-from flask_wtf import Form
-from itsdangerous import Serializer
-from sqlalchemy import ARRAY, null, DateTime
 from forms import *
 #----------------------------------------------------------------------------#
 # App Config.
@@ -26,8 +22,7 @@ app = Flask(__name__)
 
 moment = Moment(app)
 app.config.from_object('config')
-db = SQLAlchemy(app)
-Migrate(app,db)
+db_setup(app)
 
 # TODO: connect to a local postgresql database
 
@@ -35,49 +30,7 @@ Migrate(app,db)
 # Models.
 #----------------------------------------------------------------------------#
 
-class Show(db.Model):
-  __tablename__ = 'Show'
-  id = db.Column(db.Integer,primary_key=True)
-  venue_id = db.Column(db.Integer,db.ForeignKey('Venue.id'))
-  artist_id = db.Column(db.Integer,db.ForeignKey('Artist.id'))
-  start_time = db.Column(db.DateTime,nullable=False)
 
-class Venue(db.Model):
-    __tablename__ = 'Venue'
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String,nullable=False)
-    city = db.Column(db.String(120), nullable=False)
-    state = db.Column(db.String(120), nullable=False)
-    address = db.Column(db.String(120), nullable=False)
-    phone = db.Column(db.String(120), nullable=False)
-    image_link = db.Column(db.String(),nullable=False)
-    facebook_link = db.Column(db.String(120), nullable=False)
-    website = db.Column(db.String(),nullable=False)
-    genres = db.Column(ARRAY(db.String()), nullable=False)
-    seeking_talent = db.Column(db.Boolean,nullable=False)
-    seeking_description = db.Column(db.String(), nullable=True)
-    shows = db.relationship('Show',backref='venue',lazy=True)
-
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate
-
-class Artist(db.Model):
-    __tablename__ = 'Artist'
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String, nullable=False)
-    city = db.Column(db.String(120), nullable=False)
-    state = db.Column(db.String(120), nullable=False)
-    phone = db.Column(db.String(120), nullable=False)
-    image_link = db.Column(db.String(),nullable=False)
-    facebook_link = db.Column(db.String(120), nullable=False)
-    website = db.Column(db.String(),nullable=False)
-    genres = db.Column(ARRAY(db.String()), nullable=False)
-    seeking_venue = db.Column(db.Boolean,nullable=False)
-    seeking_description = db.Column(db.String(), nullable=True)
-    shows = db.relationship('Show',backref='artist',lazy=True)
-
-    
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
@@ -118,7 +71,6 @@ def venues():
   #       num_upcoming_shows should be aggregated based on number of upcoming shows per venue.
   venues = Venue.query.all()
   city_states = {(venue.city,venue.state) for venue in venues}
-  print(city_states)
   def City_State_Serializer(city_state):
     city = city_state[0]
     state = city_state[1]
@@ -138,27 +90,7 @@ def venues():
     return response
   
   data= [City_State_Serializer(city_state) for city_state in city_states]
-  data2=[{
-    "city": "San Francisco",
-    "state": "CA",
-    "venues": [{
-      "id": 1,
-      "name": "The Musical Hop",
-      "num_upcoming_shows": 0,
-    }, {
-      "id": 3,
-      "name": "Park Square Live Music & Coffee",
-      "num_upcoming_shows": 1,
-    }]
-  }, {
-    "city": "New York",
-    "state": "NY",
-    "venues": [{
-      "id": 2,
-      "name": "The Dueling Pianos Bar",
-      "num_upcoming_shows": 0,
-    }]
-  }]
+  
   return render_template('pages/venues.html', areas=data);
 
 @app.route('/venues/search', methods=['POST'])
@@ -422,9 +354,9 @@ def edit_artist_submission(artist_id):
     db.session.commit()
   except:
     db.session.rollback()
+    print(sys.exc_info())
   finally:
     db.session.close()
-
 
   return redirect(url_for('show_artist', artist_id=artist_id))
 

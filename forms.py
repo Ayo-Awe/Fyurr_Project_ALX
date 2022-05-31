@@ -232,7 +232,7 @@ class ArtistForm(Form):
         'website_link', validators=[URL()]
      )
 
-    seeking_venue = BooleanField( 'seeking_venue')
+    seeking_venue = BooleanField( 'seeking_venue',false_values=(False,"false",0,"0"))
 
     seeking_description = StringField(
             'seeking_description'
